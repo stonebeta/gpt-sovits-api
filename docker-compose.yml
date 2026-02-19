@@ -1,0 +1,18 @@
+services:
+  gpt-sovits:
+    image: blxckstone/gpt-sovits-api:latest
+    container_name: gpt-sovits-api
+    ports:
+      - "9880:9880"
+    volumes:
+      - ./models:/models
+    environment:
+      - CONFIG_PATH=/models/tts_infer.yaml
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
