@@ -4,7 +4,6 @@ FROM python:3.10-slim AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libsox-dev \
-    ffmpeg \
     wget \
     ca-certificates \
     unzip \
@@ -17,8 +16,7 @@ RUN wget https://github.com/RVC-Boss/GPT-SoVITS/archive/refs/heads/main.zip \
 
 WORKDIR /GPT-SoVITS
 
-RUN pip install --no-cache-dir -r extra-req.txt --no-deps \
-    && pip install --no-cache-dir -r requirements.txt \
+RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir torchcodec
 
 
@@ -37,19 +35,16 @@ COPY --from=builder /GPT-SoVITS /GPT-SoVITS
 
 WORKDIR /GPT-SoVITS
 
-COPY ./pretrained_models GPT_SoVITS/pretrained_models
-COPY ./G2PWModel GPT_SoVITS/text/G2PWModel
+COPY pretrained_models GPT_SoVITS/pretrained_models
+COPY G2PWModel GPT_SoVITS/text/G2PWModel
+COPY averaged_perceptron_tagger_eng /root/nltk_data/taggers/averaged_perceptron_tagger_eng
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV CONFIG_PATH=/configs/tts_infer.yaml
+ENV PUID=1000
+ENV PGID=1000
 
 EXPOSE 9880
 
-CMD ["sh", "-c", "\
-    if [ ! -f \"$CONFIG_PATH\" ]; then \
-    echo \"Config not found, copying default...\"; \
-    mkdir -p \"$(dirname \"$CONFIG_PATH\")\"; \
-    cp GPT_SoVITS/configs/tts_infer.yaml \"$CONFIG_PATH\"; \
-    fi && \
-    chmod 777 \"$(dirname \"$CONFIG_PATH\")\" && \
-    chmod 777 \"$CONFIG_PATH\" && \
-    exec python api_v2.py -a 0.0.0.0 -p 9880 -c \"$CONFIG_PATH\""]
+ENTRYPOINT ["/entrypoint.sh"]

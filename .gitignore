@@ -1,0 +1,4 @@
+models
+pretrained_models*
+G2PWModel*
+averaged_perceptron_tagger_eng

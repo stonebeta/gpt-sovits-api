@@ -8,6 +8,8 @@ services:
       - ./models:/models
     environment:
       - CONFIG_PATH=/models/tts_infer.yaml
+      - PUID=1000
+      - PGID=1000
     restart: unless-stopped
     deploy:
       resources:
